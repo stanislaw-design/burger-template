@@ -1,0 +1,6 @@
+{
+  "name": "Burger Craft",
+  "description": "Prężna, interaktywna strona z czterema rodzajami burgerów, dynamiczną animacją przewijania i unikalnymi akcentami każdego burgera.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
