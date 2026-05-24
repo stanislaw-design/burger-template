@@ -28,16 +28,76 @@ export default function App() {
   const [copiedText, setCopiedText] = useState<"phone" | "address" | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isTransitioningRef = useRef(false);
 
-  // Sync scroll positions when using navigation or buttons
+  // Sync scroll positions when using navigation or buttons, managing transition lock
   const navigateToSection = (index: number) => {
     if (scrollContainerRef.current) {
+      isTransitioningRef.current = true;
       scrollContainerRef.current.scrollTo({
         top: index * window.innerHeight,
         behavior: "smooth",
       });
+      // Lock scroll input for the duration of the transition (800ms)
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, 800);
     }
   };
+
+  // Handle scroll-jacked page transitions on wheel and swipe gestures
+  useEffect(() => {
+    if (isCartOpen || isMenuOpen || isFindUsOpen || isDetailModalOpen) {
+      return;
+    }
+
+    const handleScrollTransition = (direction: "up" | "down") => {
+      if (isTransitioningRef.current) return;
+
+      let nextIndex = activeIndex;
+      if (direction === "down" && activeIndex < BURGERS.length - 1) {
+        nextIndex = activeIndex + 1;
+      } else if (direction === "up" && activeIndex > 0) {
+        nextIndex = activeIndex - 1;
+      }
+
+      if (nextIndex !== activeIndex) {
+        navigateToSection(nextIndex);
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 20) return;
+      const direction = e.deltaY > 0 ? "down" : "up";
+      handleScrollTransition(direction);
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaY = touchStartY - touchEndY;
+      
+      // Swipe threshold of 50px
+      if (Math.abs(deltaY) < 50) return;
+      
+      const direction = deltaY > 0 ? "down" : "up";
+      handleScrollTransition(direction);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [activeIndex, isCartOpen, isMenuOpen, isFindUsOpen, isDetailModalOpen]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -230,7 +290,7 @@ export default function App() {
       
       {/* Dynamic Animated Core Background */}
       <div 
-        className="absolute inset-0 z-0 transition-all duration-700 ease-out"
+        className="absolute inset-0 z-0"
         style={{
           background: `radial-gradient(circle at 45% 50%, rgba(${interpolatedRgb}, 0.1) 0%, rgba(8, 8, 8, 0) 65%)`
         }}
@@ -598,7 +658,7 @@ export default function App() {
                       opacity: opacity,
                       transform: `translate(-50%, -50%) scale(${scale})`,
                     }}
-                    className="absolute flex flex-col items-center cursor-pointer text-center group font-mono z-10 transition-all duration-500"
+                    className="absolute flex flex-col items-center cursor-pointer text-center group font-mono z-10"
                   >
                     {/* Item label */}
                     <div 
@@ -667,7 +727,7 @@ export default function App() {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="absolute inset-x-0 inset-y-0 overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar z-30"
+        className="absolute inset-0 overflow-hidden no-scrollbar z-30 pointer-events-none"
       >
         <div className="h-screen w-full snap-start" />
         <div className="h-screen w-full snap-start" />
