@@ -24,6 +24,7 @@ export default function App() {
   const [showQuickOrderPopup, setShowQuickOrderPopup] = useState<string | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFindUsOpen, setIsFindUsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [copiedText, setCopiedText] = useState<"phone" | "address" | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -363,7 +364,7 @@ export default function App() {
               </div>
 
               {/* Action purchase trigger - Sharp borders */}
-              <div className="pt-1 flex flex-row gap-3 items-stretch select-auto w-[85%] max-w-[200px] sm:w-auto">
+              <div className="pt-1 flex flex-row gap-3 items-stretch select-auto w-[85%] sm:w-auto">
                 <button
                   onClick={() => setIsFindUsOpen(true)}
                   className="px-6 sm:px-8 py-3 sm:py-3.5 border text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.2em] font-extrabold transition-all cursor-pointer select-none active:scale-95 duration-300 flex-grow text-center"
@@ -385,12 +386,18 @@ export default function App() {
                 >
                   <span>ZAMÓW</span>
                 </button>
+                <button
+                  onClick={() => setIsMenuOpen(true)}
+                  className="px-6 sm:px-8 py-3 sm:py-3.5 border border-white/10 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.2em] font-extrabold transition-all cursor-pointer select-none active:scale-95 duration-300 text-white/60 hover:text-white hover:border-white/30 hover:bg-white/5 text-center"
+                >
+                  <span>MENU</span>
+                </button>
               </div>
 
             </div>
 
             {/* Spinning background dynamic wheels & Giant Burger Graphic overlay - Placed lower and larger on mobile, pointer-events-auto on mobile to allow click */}
-            <div className="relative lg:absolute top-0 lg:top-1/2 left-0 lg:left-auto transform-none lg:-translate-y-1/2 lg:-translate-x-0 lg:right-[8%] xl:right-[15%] w-[230px] h-[230px] xs:w-[270px] xs:h-[270px] sm:w-[350px] sm:h-[350px] lg:w-[420px] lg:h-[420px] xl:w-[500px] xl:h-[500px] flex items-center justify-center select-none pointer-events-auto lg:pointer-events-none z-20 lg:-z-10 order-2 mx-auto lg:mx-0 transition-all duration-500 my-2 lg:my-0 mt-8 xs:mt-10 sm:mt-12 lg:-mt-0">
+            <div className="relative lg:absolute top-0 lg:top-1/2 left-0 lg:left-auto transform-none lg:-translate-y-1/2 lg:-translate-x-0 lg:right-[22%] xl:right-[26%] w-[230px] h-[230px] xs:w-[270px] xs:h-[270px] sm:w-[350px] sm:h-[350px] lg:w-[520px] lg:h-[520px] xl:w-[600px] xl:h-[600px] flex items-center justify-center select-none pointer-events-auto lg:pointer-events-none z-20 lg:-z-10 order-2 mx-auto lg:mx-0 transition-all duration-500 my-2 lg:my-0 mt-8 xs:mt-10 sm:mt-12 lg:-mt-0">
               {/* Blurred color wash */}
               <div 
                 className="absolute inset-0 rounded-full blur-3xl opacity-35 transition-all duration-1000"
@@ -811,6 +818,109 @@ export default function App() {
         )}
       </AnimatePresence>
       
+      {/* Menu Modal */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMenuOpen(false)}
+            className="fixed inset-0 bg-[#060606]/92 backdrop-blur-xl z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-2xl bg-[#0d0d0d] border border-white/10 rounded-[24px] p-6 sm:p-8 shadow-2xl relative overflow-y-auto no-scrollbar max-h-[90vh]"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center pb-4 border-b border-white/5 mb-6">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/30">Burger Craft Premium</span>
+                  <h2 className="text-2xl font-black italic tracking-tighter uppercase text-stone-100 mt-0.5">
+                    Nasze <span className="transition-colors duration-500" style={{ color: currentAccent }}>Menu</span>
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-stone-400 hover:text-white transition-all select-none active:scale-90"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Burger Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {BURGERS.map((burger) => {
+                  const accentColor = getThemeColorHex(burger.id);
+                  const isActive = burger.id === activeIndex;
+                  return (
+                    <motion.div
+                      key={burger.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        navigateToSection(burger.id);
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300"
+                      style={{
+                        backgroundColor: isActive ? `${accentColor}10` : "rgba(255,255,255,0.02)",
+                        borderColor: isActive ? `${accentColor}40` : "rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        <div
+                          className="absolute inset-0 rounded-full blur-xl opacity-40"
+                          style={{ background: accentColor }}
+                        />
+                        <img
+                          src={burger.image}
+                          alt={burger.name}
+                          className="relative w-full h-full object-contain drop-shadow-lg select-none"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className="text-[8px] font-mono uppercase tracking-widest font-bold"
+                          style={{ color: accentColor }}
+                        >
+                          {burger.tag}
+                        </span>
+                        <h3 className="text-sm font-black italic uppercase tracking-tight text-stone-100 leading-tight mt-0.5">
+                          {burger.name}
+                        </h3>
+                        <p className="text-[10px] text-white/40 font-sans mt-1 leading-relaxed line-clamp-2">
+                          {burger.tagline}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="font-mono font-bold text-sm" style={{ color: accentColor }}>
+                            {burger.price}
+                          </span>
+                          <span className="text-[9px] font-mono text-white/25">
+                            {burger.nutrition.calories.split(" ")[0]} kcal
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="mt-6 w-full py-3.5 uppercase border border-white/10 font-mono tracking-[0.15em] text-[10px] font-extrabold transition-all active:scale-95 duration-200 select-none cursor-pointer text-white/50 hover:text-white hover:border-white/30 hover:bg-white/5"
+              >
+                Zamknij
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Znajdź nas / Kontakt Modal */}
       <AnimatePresence>
         {isFindUsOpen && (
